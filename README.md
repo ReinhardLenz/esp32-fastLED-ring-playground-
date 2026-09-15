@@ -1,68 +1,249 @@
+
+
+
 # **Circuit Documentation**
 
-## **Summary**
 
-This circuit integrates an ESP32-CAM module, a CP2102 USB-to-UART bridge, a NEOPIXEL WS2812 45 LED ring, a resistor, and an electrolytic capacitor. The ESP32-CAM is programmed to control the LED ring, creating a visual effect by chasing a red dot around the ring. The CP2102 facilitates communication between the ESP32-CAM and a computer for programming and debugging. The resistor is used to limit current to the LED ring, and the capacitor helps stabilize the power supply.
+![My picture](images/circuit_image-T-beam-potentiometer.png)
 
-![My picture](images/LED-ring_capacitance_resistor.png)
+## **1\. Circuit Summary**
 
-## **Component List**
+This circuit combines a LILYGO T-Beam Meshtastic LORA32 915 MHz controller with:
 
-1. **CP2102 USB-to-UART Bridge**  
-   * **Description**: A USB-to-UART bridge used for serial communication.  
-   * **Pins**: VCC IO, GND, TXD, RXD, RTS, CTS  
-2. **NEOPIXEL WS2812 45 LED Ring**  
-   * **Description**: A ring of 45 individually addressable RGB LEDs.  
-   * **Pins**: GND, D1, 5V, D0  
-3. **Resistor**  
-   * **Description**: A 330 Ohm resistor used to limit current.  
-   * **Pins**: pin1, pin2  
-   * **Properties**: Resistance: 330 Ohms  
-4. **ESP32-CAM**  
-   * **Description**: A microcontroller with integrated camera and Wi-Fi capabilities.  
-   * **Pins**: 5V, GND, OI12, OI13, IO15, IO14, IO2, IO1, 3V3, IO16, IO0, VCC, UOR, UOT, GND/R  
-5. **Electrolytic Capacitor**  
-   * **Description**: A capacitor used for power stabilization.  
-   * **Pins**: \-, \+  
-   * **Properties**: Capacitance: 0.00047 Farads
+> * A BNO085 motion sensor.  
+> * A 45-pixel WS2812 NeoPixel ring.  
+> * A potentiometer connected to an analog input.  
+> * An 18650 battery and MT3608 boost converter used to provide approximately 5 V to the NeoPixel ring.
 
-## **Wiring Details**
+The T-Beam interfaces with the BNO085 using two GPIO pins, drives the NeoPixel ring from another GPIO, and reads the potentiometer wiper through an analog-capable GPIO.  
+The circuit, as represented by the supplied net list, has several important limitations:
 
-### **CP2102 USB-to-UART Bridge**
+> 1. The T-Beam power pins are not connected to the battery or MT3608 output.  
+> 2. The BNO085 interface mode is not fully determined from the available connections.  
+> 3. The BNO085 INT, RST, CS, and ADR/MOSI pins are unconnected.  
+> 4. The NeoPixel ring has a 5 V supply from the MT3608, but its logic signal is driven directly by a 3.3 V T-Beam GPIO.  
+> 5. No microcontroller code was provided.  
+> 6. The MT3608 output voltage adjustment is not documented and must be configured appropriately before connecting the NeoPixel ring.
 
-* **GND** is connected to the GND of the Electrolytic Capacitor, NEOPIXEL WS2812 45 LED Ring, and ESP32-CAM.  
-* **TXD** is connected to the UOR pin of the ESP32-CAM.  
-* **RXD** is connected to the UOT pin of the ESP32-CAM.  
-* **VCC IO** is connected to the \+ pin of the Electrolytic Capacitor, 5V pin of the NEOPIXEL WS2812 45 LED Ring, and 5V pin of the ESP32-CAM.
+The circuit should therefore be considered electrically incomplete until the power distribution, sensor operating mode, and control software are verified.
 
-### **NEOPIXEL WS2812 45 LED Ring**
+## ---
 
-* **GND** is connected to the GND of the CP2102, Electrolytic Capacitor, and ESP32-CAM.  
-* **D1** is connected to pin1 of the Resistor.  
-* **5V** is connected to the VCC IO of the CP2102, \+ pin of the Electrolytic Capacitor, and 5V pin of the ESP32-CAM.
+**2\. Component List**
 
-### **Resistor**
+### **LILYGO T-Beam Meshtastic LORA32 915 MHz**
 
-* **pin1** is connected to the D1 pin of the NEOPIXEL WS2812 45 LED Ring.  
-* **pin2** is connected to the IO15 pin of the ESP32-CAM.
+The T-Beam is the primary microcontroller and wireless processing board. It provides the GPIO interfaces for the BNO085, NeoPixel ring, and potentiometer.  
+Used connections:
 
-### **ESP32-CAM**
+> * GPIO 14: BNO085 clock or serial interface signal.  
+> * GPIO 15: BNO085 data or serial interface signal.  
+> * GPIO 13: NeoPixel data output.  
+> * GPIO 33: Potentiometer analog input.  
+> * 3V3: BNO085 and potentiometer supply.  
+> * GND: Common circuit ground.
 
-* **GND/R** is connected to the GND of the CP2102, Electrolytic Capacitor, and NEOPIXEL WS2812 45 LED Ring.  
-* **UOR** is connected to the TXD pin of the CP2102.  
-* **UOT** is connected to the RXD pin of the CP2102.  
-* **5V** is connected to the VCC IO of the CP2102, \+ pin of the Electrolytic Capacitor, and 5V pin of the NEOPIXEL WS2812 45 LED Ring.  
-* **IO15** is connected to pin2 of the Resistor.  
-* **IO0** is connected to the GND pin of the ESP32-CAM.
+The board’s other listed pins are not connected in the supplied net list.
 
-### **Electrolytic Capacitor**
+### ---
 
-* **\-** is connected to the GND of the CP2102, NEOPIXEL WS2812 45 LED Ring, and ESP32-CAM.  
-* **\+** is connected to the VCC IO of the CP2102, 5V pin of the NEOPIXEL WS2812 45 LED Ring, and 5V pin of the ESP32-CAM.
+**BNO085**
 
-## **Photo**
+The BNO085 is an intelligent nine-axis motion sensor capable of providing orientation, acceleration, gyroscope, and related motion data.  
+Used connections:
 
-(no resitor or capacitance)
- 
-![My picture](images/led-RING.jpg)
+> * VCC: Connected to the T-Beam 3.3 V supply.  
+> * GND: Connected to common ground.  
+> * PS1: Connected to VCC.  
+> * PS0: Connected to ground.  
+> * SCL/SCK/RX: Connected to T-Beam GPIO 14\.  
+> * SDA/MISO/TX: Connected to T-Beam GPIO 15\.
+
+The following pins are unconnected:
+
+> * ADR/MOSI  
+> * CS  
+> * INT  
+> * RST
+
+
+### ---
+
+**NEOPIXEL WS2812 45 LED Ring**
+
+The NeoPixel ring contains 45 individually addressable WS2812 LEDs.  
+Used connections:
+
+> * 5V: Supplied from the MT3608 boost converter output.  
+> * GND: Connected to common ground.  
+> * D1: Connected to T-Beam GPIO 13\.
+
+
+
+### ---
+
+**18650 in Holder**
+
+The 18650 battery holder provides the primary battery source for the boost converter.  
+Used connections:
+
+> * VCC: Connected to the MT3608 VIN+ input.  
+> * GND: Connected to the MT3608 VIN- input.
+
+The battery voltage varies with charge state. A single 18650 cell is typically approximately 4.2 V when fully charged and can fall to around 3.0 V or lower during discharge. The battery should include suitable protection, or a protected cell and appropriate battery-management circuitry should be used.
+
+### ---
+
+**MT3608 Boost Converter**
+
+The MT3608 boosts the 18650 battery voltage to a higher output voltage for the NeoPixel ring.  
+Used connections:
+
+> * VIN+: Connected to the 18650 holder VCC.  
+> * VIN-: Connected to the 18650 holder GND.  
+> * VOUT+: Connected to the NeoPixel ring 5V.  
+> * VOUT-: Connected to common ground.
+
+The MT3608 output voltage must be adjusted to the desired value before connecting the NeoPixel ring. A nominal 5 V setting is appropriate for the WS2812 ring, but the output should be measured with a multimeter.  
+The MT3608 output is not connected to the T-Beam supply in the supplied net list.
+
+### ---
+
+**POT**
+
+The potentiometer provides a variable analog voltage to the T-Beam.  
+Used connections:
+
+> * A: Connected to the T-Beam 3V3 supply.  
+> * E: Connected to common ground.  
+> * S: Connected to T-Beam GPIO 33\.
+
+The potentiometer wiper produces an adjustable voltage between approximately 0 V and 3.3 V. GPIO 33 is an analog-capable ESP32 input and is suitable for reading the wiper voltage, assuming the particular T-Beam revision supports this pin as expected.
+
+## ---
+
+**3\. Wiring Details by Component**
+
+### **LILYGO T-Beam Meshtastic LORA32 868 MHz**
+
+| T-Beam Pin | Connected To | Function   |
+| :---- | :---- | :---- |
+| 14 | BNO085 SCL/SCK/RX | Sensor clock or receive signal, depending on interface mode |
+| 15 | BNO085 SDA/MISO/TX | Sensor data or transmit signal, depending on interface mode |
+| 13 | NeoPixel ring D1 | WS2812 data output |
+| 33 | Potentiometer S | Analog potentiometer input |
+| 3V3 | BNO085 VCC, BNO085 PS1, potentiometer A | 3.3 V supply and interface-mode configuration |
+| GND | BNO085 GND, BNO085 PS0, MT3608 VOUT-, potentiometer E, NeoPixel GND | Common ground |
+
+No connection is specified from the battery or MT3608 output to the T-Beam power input. The T-Beam therefore has no documented power source in the supplied circuit description.
+
+### ---
+
+**BNO085**
+
+| BNO085 Pin | Connected To | Function   |
+| :---- | :---- | :---- |
+| VCC | T-Beam 3V3 | 3.3 V sensor supply |
+| GND | Common ground | Ground return |
+| PS1 | T-Beam 3V3 | Interface-mode selection |
+| PS0 | Common ground | Interface-mode selection |
+| SCL/SCK/RX | T-Beam GPIO 14 | Clock or receive signal |
+| SDA/MISO/TX | T-Beam GPIO 15 | Data or transmit signal |
+| ADR/MOSI | Unconnected | No connection specified |
+| CS | Unconnected | No connection specified |
+| INT | Unconnected | No interrupt connection specified |
+| RST | Unconnected | No reset connection specified |
+
+The BNO085 communication protocol cannot be conclusively identified from the net list alone because the signal names support multiple protocols. The firmware must match the hardware configuration selected by PS0 and PS1.
+
+### ---
+
+**NEOPIXEL WS2812 45 LED RING**
+
+| NeoPixel Pin | Connected To | Function   |
+| :---- | :---- | :---- |
+| 5V | MT3608 VOUT+ | LED ring power |
+| GND | Common ground | Power return |
+| D1 | T-Beam GPIO 13 | Serial LED data input |
+| D0 | Unconnected | Not used in the supplied circuit |
+
+Recommended practical additions, not present in the supplied net list, include:
+
+> * A bulk capacitor across the ring’s 5 V and GND inputs.  
+> * A series resistor, commonly around be 220–470 Ω, in the data line near the first pixel.  
+> * A suitable 3.3 V-to-5 V logic-level translator if reliable data reception is not achieved.
+
+### ---
+
+**18650 in Holder**
+
+| Battery Pin | Connected To | Function   |
+| :---- | :---- | :---- |
+| VCC | MT3608 VIN+ | Positive battery connection |
+| GND | MT3608 VIN- | Negative battery connection |
+
+The battery polarity must be verified before powering the circuit. The holder and wiring should be rated for the expected NeoPixel current and boost-converter input current.
+
+### ---
+
+**MT3608 Boost Converter**
+
+| MT3608 Pin | Connected To | Function   |
+| :---- | :---- | :---- |
+| VIN+ | 18650 holder VCC | Battery positive input |
+| VIN- | 18650 holder GND | Battery negative input |
+| VOUT+ | NeoPixel ring 5V | Boosted positive output |
+| VOUT- | Common ground | Boosted output return |
+
+The MT3608 output voltage should be adjusted and measured under appropriate conditions. The converter must be capable of supplying the required current without excessive voltage drop or overheating.
+
+### ---
+
+**POT**
+
+| Potentiometer Pin | Connected To | Function   |
+| :---- | :---- | :---- |
+| A | T-Beam 3V3 | Positive potentiometer supply |
+| E | Common ground | Potentiometer ground |
+| S | T-Beam GPIO 33 | Variable analog output |
+
+The potentiometer output should remain within the T-Beam’s permitted GPIO input range. With the supplied connections, the expected range is approximately 0–3.3 V.
+
+## ---
+
+**4\. Power and Grounding**
+
+The circuit contains two nominal supply domains:
+
+### **3.3 V Domain**
+
+Supplied by the T-Beam:
+
+> * BNO085 VCC  
+> * BNO085 PS1  
+> * Potentiometer terminal A
+
+### **Boosted 5 V Domain**
+
+Supplied by the MT3608:
+
+> * NeoPixel ring 5V
+
+### **Common Ground**
+
+The following are connected to a common ground net:
+
+> * T-Beam GND  
+> * BNO085 GND  
+> * BNO085 PS0  
+> * MT3608 VOUT-  
+> * MT3608 VIN-  
+> * 18650 holder GND  
+> * Potentiometer E  
+> * NeoPixel ring GND
+
+The T-Beam ground and MT3608 output ground are therefore electrically common, allowing the T-Beam data signal to reference the NeoPixel ground.
+
+## ---
+
 
