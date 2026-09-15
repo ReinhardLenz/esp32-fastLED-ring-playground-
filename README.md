@@ -8,7 +8,7 @@
 
 ## **1\. Circuit Summary**
 
-This circuit combines a LILYGO T-Beam Meshtastic LORA32 915 MHz controller with:
+This circuit combines a LILYGO T-Beam Meshtastic LORA32 868 MHz controller with:
 
 > * A BNO085 motion sensor.  
 > * A 45-pixel WS2812 NeoPixel ring.  
@@ -16,22 +16,14 @@ This circuit combines a LILYGO T-Beam Meshtastic LORA32 915 MHz controller with:
 > * An 18650 battery and MT3608 boost converter used to provide approximately 5 V to the NeoPixel ring.
 
 The T-Beam interfaces with the BNO085 using two GPIO pins, drives the NeoPixel ring from another GPIO, and reads the potentiometer wiper through an analog-capable GPIO.  
-The circuit, as represented by the supplied net list, has several important limitations:
+The circuit is intended to test the potentiometer and Neopixelring togetheer.
 
-> 1. The T-Beam power pins are not connected to the battery or MT3608 output.  
-> 2. The BNO085 interface mode is not fully determined from the available connections.  
-> 3. The BNO085 INT, RST, CS, and ADR/MOSI pins are unconnected.  
-> 4. The NeoPixel ring has a 5 V supply from the MT3608, but its logic signal is driven directly by a 3.3 V T-Beam GPIO.  
-> 5. No microcontroller code was provided.  
-> 6. The MT3608 output voltage adjustment is not documented and must be configured appropriately before connecting the NeoPixel ring.
-
-The circuit should therefore be considered electrically incomplete until the power distribution, sensor operating mode, and control software are verified.
 
 ## ---
 
 **2\. Component List**
 
-### **LILYGO T-Beam Meshtastic LORA32 915 MHz**
+### **LILYGO T-Beam Meshtastic LORA32 868 MHz**
 
 The T-Beam is the primary microcontroller and wireless processing board. It provides the GPIO interfaces for the BNO085, NeoPixel ring, and potentiometer.  
 Used connections:
