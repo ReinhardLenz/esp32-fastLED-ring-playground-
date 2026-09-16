@@ -16,7 +16,7 @@ This circuit combines a LILYGO T-Beam Meshtastic LORA32 868 MHz controller with:
 > * An 18650 battery and MT3608 boost converter used to provide approximately 5 V to the NeoPixel ring.
 
 The T-Beam interfaces with the BNO085 using two GPIO pins, drives the NeoPixel ring from another GPIO, and reads the potentiometer wiper through an analog-capable GPIO.  
-The circuit is intended to test the potentiometer and Neopixelring togetheer.
+The circuit and program is intended to test the potentiometer and Neopixelring together. By rotating the potentiometer from zero to full, the LED is changing it's position between 0 ... 360 degrees. In this code setup, the BNO085 has no function at all.
 
 
 ## ---
