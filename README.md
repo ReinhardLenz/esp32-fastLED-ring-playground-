@@ -5,12 +5,12 @@
 
 ## Schematic
 
-![My picture](circuit_image_potentiometer.png)
+![My picture](images/circuit_image_potentiometer.png)
 
 
 ## Photo
 
-![My picture](photo_curcuit_with_potentiometer.jpg)
+![My picture](images/photo_curcuit_with_potentiometer.jpg)
 
 
 ## **1\. Circuit Summary**
