@@ -13,6 +13,8 @@ static constexpr EOrder   COLOR_ORDER = GRB;
 // ADC / voltage mapping
 static constexpr float VREF = 3.3f;           // potentiometer supplied from 3V3
 static constexpr int   ADC_MAX = 4095;        // ESP32 ADC is 12-bit by default (0..4095)
+float angle = 0;
+float raw = 0;
 
 
 // -------------------- Globals --------------------
@@ -34,28 +36,20 @@ void setup() {
 
   // Prime filter
   int raw = analogRead(ADC_PIN);
-  filteredAdc = (float)raw;
 
   Serial.println("ESP32 ADC->45-LED ring mapper started.");
 }
 
 void loop() {
   // 1) Read ADC
-  int raw = analogRead(ADC_PIN);
+  float raw = analogRead(ADC_PIN);
 
   // 3) Convert to voltage (approx; ESP32 ADC is not perfectly linear)
-  float voltage = (raw / (float)ADC_MAX) * VREF;
+  float angle = int(raw * 0.088);
+  
+  
+ int ledIndex = (int)(raw/91);
 
-Serial.print(raw);
-Serial.print(",");
-
-  // 4) Map voltage to LED index:
-  //    0.0V -> LED 0
-  //    ...
-  //    3.3V -> LED 44 (max)
-  //
-  // Each LED step is VREF/NUM_LEDS (3.3/45 = 0.07333..V)
-  int ledIndex = (int)floorf((voltage / VREF) * NUM_LEDS);
 
 
   // Clamp to valid range (important when voltage == VREF)
@@ -66,7 +60,7 @@ Serial.print(",");
   // 6) Light exactly one LED, turn others off
   FastLED.clear(false);
   leds[ledIndex] = CRGB::Blue;   // choose your color
-  Serial.println(ledIndex);
+  Serial.println(angle, 2);
 
   FastLED.show();
 
