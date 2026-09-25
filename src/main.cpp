@@ -3,7 +3,7 @@
 
 // -------------------- Hardware configuration --------------------
 static constexpr uint8_t  LED_PIN   = 13;     // T-Beam GPIO 13 -> NeoPixel DIN
-static constexpr uint8_t  ADC_PIN   = 33;     // T-Beam GPIO 33 -> potentiometer wiper
+static constexpr uint8_t  ADC_PIN   = 36;     // T-Beam GPIO 36 -> potentiometer wiper
 static constexpr uint16_t NUM_LEDS  = 45;
 
 static constexpr uint8_t  BRIGHTNESS = 40;    // keep current low; adjust as needed
@@ -14,8 +14,6 @@ static constexpr EOrder   COLOR_ORDER = GRB;
 static constexpr float VREF = 3.3f;           // potentiometer supplied from 3V3
 static constexpr int   ADC_MAX = 4095;        // ESP32 ADC is 12-bit by default (0..4095)
 
-// Optional smoothing (simple low-pass)
-static constexpr float SMOOTH_ALPHA = 0.15f;  // 0..1 (higher = less smoothing)
 
 // -------------------- Globals --------------------
 CRGB leds[NUM_LEDS];
@@ -45,11 +43,11 @@ void loop() {
   // 1) Read ADC
   int raw = analogRead(ADC_PIN);
 
-  // 2) Smooth (optional but helps with flicker around thresholds)
-  filteredAdc = (1.0f - SMOOTH_ALPHA) * filteredAdc + SMOOTH_ALPHA * (float)raw;
-
   // 3) Convert to voltage (approx; ESP32 ADC is not perfectly linear)
-  float voltage = (filteredAdc / (float)ADC_MAX) * VREF;
+  float voltage = (raw / (float)ADC_MAX) * VREF;
+
+Serial.print(raw);
+Serial.print(",");
 
   // 4) Map voltage to LED index:
   //    0.0V -> LED 0
@@ -59,26 +57,20 @@ void loop() {
   // Each LED step is VREF/NUM_LEDS (3.3/45 = 0.07333..V)
   int ledIndex = (int)floorf((voltage / VREF) * NUM_LEDS);
 
+
   // Clamp to valid range (important when voltage == VREF)
   if (ledIndex < 0) ledIndex = 0;
   if (ledIndex >= (int)NUM_LEDS) ledIndex = NUM_LEDS - 1;
 
-  // 5) Compute degrees (optional, for serial debug)
-  float degrees = (voltage / VREF) * 360.0f;
-  if (degrees < 0) degrees = 0;
-  if (degrees > 360.0f) degrees = 360.0f;
 
   // 6) Light exactly one LED, turn others off
   FastLED.clear(false);
   leds[ledIndex] = CRGB::Blue;   // choose your color
+  Serial.println(ledIndex);
+
   FastLED.show();
 
-  // Debug output (optional)
-  static uint32_t lastPrint = 0;
-  if (millis() - lastPrint > 200) {
-    lastPrint = millis();
-    Serial.printf("raw=%d  V=%.3f  deg=%.1f  led=%d\n", raw, voltage, degrees, ledIndex);
-  }
+
 
   delay(10);
 }

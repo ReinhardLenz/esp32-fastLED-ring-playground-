@@ -1,0 +1,23 @@
+#include <Arduino.h>
+#include "driver/adc.h"
+
+static constexpr int ADC_PIN = 36;
+
+void setup() {
+  Serial.begin(115200);
+
+  analogReadResolution(12);
+
+  // Try different attenuations to see where it stops saturating
+  // ADC_0db  ~1.1V full scale
+  // ADC_2_5db ~1.5V
+  // ADC_6db  ~2.2V
+  // ADC_11db ~3.3V (nominal, but varies)
+  analogSetPinAttenuation(ADC_PIN, ADC_11db);
+}
+
+void loop() {
+  int raw = analogRead(ADC_PIN);
+  Serial.println(raw);
+  delay(20);
+}

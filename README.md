@@ -3,8 +3,15 @@
 
 # **Circuit Documentation**
 
+## Schematic
 
-![My picture](images/circuit_image-T-beam-potentiometer.png)
+![My picture](circuit_image_potentiometer.png)
+
+
+## Photo
+
+![My picture](photo_curcuit_with_potentiometer.jpg)
+
 
 ## **1\. Circuit Summary**
 
@@ -15,7 +22,7 @@ This circuit combines a LILYGO T-Beam Meshtastic LORA32 868 MHz controller with:
 > * A potentiometer connected to an analog input.  
 > * An 18650 battery and MT3608 boost converter used to provide approximately 5 V to the NeoPixel ring.
 
-The T-Beam interfaces with the BNO085 using two GPIO pins, drives the NeoPixel ring from another GPIO, and reads the potentiometer wiper through an analog-capable GPIO.  
+The T-Beam  reads the potentiometer wiper through an analog-capable GPIO36 and drives the NeoPixel ring.   
 The circuit and program is intended to test the potentiometer and Neopixelring together. By rotating the potentiometer from zero to full, the LED is changing it's position between 0 ... 360 degrees. In this code setup, the BNO085 has no function at all.
 
 
@@ -23,219 +30,221 @@ The circuit and program is intended to test the potentiometer and Neopixelring t
 
 **2\. Component List**
 
-### **LILYGO T-Beam Meshtastic LORA32 868 MHz**
+### **LILYGO T-Beam Meshtastic LORA32 915 MHz**
 
-The T-Beam is the primary microcontroller and wireless processing board. It provides the GPIO interfaces for the BNO085, NeoPixel ring, and potentiometer.  
-Used connections:
+The T-Beam is the main microcontroller and control board. It:
 
-> * GPIO 14: BNO085 clock or serial interface signal.  
-> * GPIO 15: BNO085 data or serial interface signal.  
-> * GPIO 13: NeoPixel data output.  
-> * GPIO 33: Potentiometer analog input.  
-> * 3V3: BNO085 and potentiometer supply.  
-> * GND: Common circuit ground.
+> * Runs the Arduino firmware.  
+> * Reads the potentiometer through its analog input.  
+> * Drives the WS2812 LED data signal.  
+> * Provides 3.3 V power to the BNO085 and potentiometer.  
+> * Provides the GPIO connections used by the BNO085.
 
-The board’s other listed pins are not connected in the supplied net list.
+The firmware uses:
+
+> * GPIO 13 for the LED data output.  
+> * GPIO 36, labeled VP on the board, for potentiometer measurement.  
+> * GPIO 15 for one BNO085 serial interface signal.  
+> * GPIO 14 for the other BNO085 serial interface signal.
 
 ### ---
 
 **BNO085**
 
-The BNO085 is an intelligent nine-axis motion sensor capable of providing orientation, acceleration, gyroscope, and related motion data.  
-Used connections:
+The BNO085 is a 9-axis intelligent motion sensor capable of providing orientation and motion data.  
+In this circuit:
 
-> * VCC: Connected to the T-Beam 3.3 V supply.  
-> * GND: Connected to common ground.  
-> * PS1: Connected to VCC.  
-> * PS0: Connected to ground.  
-> * SCL/SCK/RX: Connected to T-Beam GPIO 14\.  
-> * SDA/MISO/TX: Connected to T-Beam GPIO 15\.
+> * VCC is connected to the T-Beam 3.3 V supply.  
+> * GND is connected to the common ground.  
+> * PS1 is tied to 3.3 V.  
+> * PS0 is tied to ground.  
+> * SDA/MISO/TX is connected to T-Beam GPIO 15\.  
+> * SCL/SCK/RX is connected to T-Beam GPIO 14\.
 
-The following pins are unconnected:
-
-> * ADR/MOSI  
-> * CS  
-> * INT  
-> * RST
-
+The BNO085 chip-select, interrupt, and reset pins are not connected in the supplied wiring. The interface selected by PS0 and PS1 should be confirmed against the BNO085 module documentation.
 
 ### ---
 
-**NEOPIXEL WS2812 45 LED Ring**
+**WS2812 45-LED Ring**
 
-The NeoPixel ring contains 45 individually addressable WS2812 LEDs.  
-Used connections:
+The LED ring contains 45 individually addressable RGB LEDs.  
+In this circuit:
 
-> * 5V: Supplied from the MT3608 boost converter output.  
-> * GND: Connected to common ground.  
-> * D1: Connected to T-Beam GPIO 13\.
+> * 5V receives power from the MT3608 boost converter.  
+> * GND is connected to the common ground.  
+> * D1 receives the data signal from T-Beam GPIO 13\.  
+> * D0 is not connected.
 
-
+The firmware illuminates exactly one LED at a time in blue. The LED position is determined by the potentiometer voltage.
 
 ### ---
 
-**18650 in Holder**
+**18650 Battery Holder**
 
-The 18650 battery holder provides the primary battery source for the boost converter.  
-Used connections:
+The 18650 holder supplies the circuit’s battery power.
 
-> * VCC: Connected to the MT3608 VIN+ input.  
-> * GND: Connected to the MT3608 VIN- input.
+> * VCC supplies the positive battery voltage to the MT3608 VIN+ input.  
+> * GND connects to the MT3608 VIN- input.
 
-The battery voltage varies with charge state. A single 18650 cell is typically approximately 4.2 V when fully charged and can fall to around 3.0 V or lower during discharge. The battery should include suitable protection, or a protected cell and appropriate battery-management circuitry should be used.
+Only use a suitable protected or properly managed 18650 cell. The battery holder does not itself provide charging, over-discharge protection, or short-circuit protection unless those functions are included in the holder or battery system.
 
 ### ---
 
 **MT3608 Boost Converter**
 
-The MT3608 boosts the 18650 battery voltage to a higher output voltage for the NeoPixel ring.  
-Used connections:
+The MT3608 boosts the 18650 battery voltage to a higher output voltage for the LED ring.
 
-> * VIN+: Connected to the 18650 holder VCC.  
-> * VIN-: Connected to the 18650 holder GND.  
-> * VOUT+: Connected to the NeoPixel ring 5V.  
-> * VOUT-: Connected to common ground.
+> * VIN+ connects to the battery positive terminal.  
+> * VIN- connects to the battery negative terminal.  
+> * VOUT+ supplies the LED ring’s 5 V input.  
+> * VOUT- connects to the common ground.
 
-The MT3608 output voltage must be adjusted to the desired value before connecting the NeoPixel ring. A nominal 5 V setting is appropriate for the WS2812 ring, but the output should be measured with a multimeter.  
-The MT3608 output is not connected to the T-Beam supply in the supplied net list.
+The converter output should be adjusted to the required LED supply voltage before attaching the LED ring. The converter must also be capable of supplying the required LED current.
 
 ### ---
 
-**POT**
+**Potentiometer**
 
-The potentiometer provides a variable analog voltage to the T-Beam.  
-Used connections:
+The potentiometer provides a variable analog voltage to the T-Beam.
 
-> * A: Connected to the T-Beam 3V3 supply.  
-> * E: Connected to common ground.  
-> * S: Connected to T-Beam GPIO 33\.
+> * A connects to the T-Beam 3.3 V supply.  
+> * E connects to the common ground.  
+> * S connects to the T-Beam VP analog input, corresponding to GPIO 36\.
 
-The potentiometer wiper produces an adjustable voltage between approximately 0 V and 3.3 V. GPIO 33 is an analog-capable ESP32 input and is suitable for reading the wiper voltage, assuming the particular T-Beam revision supports this pin as expected.
+Rotating the potentiometer changes the voltage at the wiper. The firmware converts this voltage into an LED position from LED 0 through LED 44\.
 
 ## ---
 
-**3\. Wiring Details by Component**
+**3\. Component Wiring Details**
 
-### **LILYGO T-Beam Meshtastic LORA32 868 MHz**
+### **LILYGO T-Beam Meshtastic LORA32 915 MHz**
 
-| T-Beam Pin | Connected To | Function   |
+| T-Beam Pin | Connection | Function   |
 | :---- | :---- | :---- |
-| 14 | BNO085 SCL/SCK/RX | Sensor clock or receive signal, depending on interface mode |
-| 15 | BNO085 SDA/MISO/TX | Sensor data or transmit signal, depending on interface mode |
-| 13 | NeoPixel ring D1 | WS2812 data output |
-| 33 | Potentiometer S | Analog potentiometer input |
-| 3V3 | BNO085 VCC, BNO085 PS1, potentiometer A | 3.3 V supply and interface-mode configuration |
-| GND | BNO085 GND, BNO085 PS0, MT3608 VOUT-, potentiometer E, NeoPixel GND | Common ground |
+| GPIO 13 | WS2812 ring D1 | LED data output |
+| VP / GPIO 36 | Potentiometer S | Analog potentiometer input |
+| GPIO 15 | BNO085 SDA/MISO/TX | Sensor interface signal |
+| GPIO 14 | BNO085 SCL/SCK/RX | Sensor interface signal |
+| 3V3 | BNO085 VCC, BNO085 PS1, potentiometer A | 3.3 V supply |
+| GND | Common ground network | Ground return |
 
-No connection is specified from the battery or MT3608 output to the T-Beam power input. The T-Beam therefore has no documented power source in the supplied circuit description.
+The T-Beam’s other listed pins are not connected in the supplied net list.
 
 ### ---
 
 **BNO085**
 
-| BNO085 Pin | Connected To | Function   |
+| BNO085 Pin | Connection | Function   |
 | :---- | :---- | :---- |
-| VCC | T-Beam 3V3 | 3.3 V sensor supply |
+| VCC | T-Beam 3V3 | Sensor power |
 | GND | Common ground | Ground return |
 | PS1 | T-Beam 3V3 | Interface-mode selection |
 | PS0 | Common ground | Interface-mode selection |
-| SCL/SCK/RX | T-Beam GPIO 14 | Clock or receive signal |
-| SDA/MISO/TX | T-Beam GPIO 15 | Data or transmit signal |
-| ADR/MOSI | Unconnected | No connection specified |
-| CS | Unconnected | No connection specified |
-| INT | Unconnected | No interrupt connection specified |
-| RST | Unconnected | No reset connection specified |
+| SDA/MISO/TX | T-Beam GPIO 15 | Sensor data/interface signal |
+| SCL/SCK/RX | T-Beam GPIO 14 | Sensor clock/interface signal |
+| ADR/MOSI | No connection listed | Unconnected |
+| CS | No connection listed | Unconnected |
+| INT | No connection listed | Unconnected |
+| RST | No connection listed | Unconnected |
 
-The BNO085 communication protocol cannot be conclusively identified from the net list alone because the signal names support multiple protocols. The firmware must match the hardware configuration selected by PS0 and PS1.
+The actual communication protocol must match the BNO085 breakout board’s interface configuration. Because the firmware supplied here does not initialize or communicate with the BNO085, the sensor is not used by the current application code.
 
 ### ---
 
-**NEOPIXEL WS2812 45 LED RING**
+**WS2812 45-LED Ring**
 
-| NeoPixel Pin | Connected To | Function   |
+| LED Ring Pin | Connection | Function   |
 | :---- | :---- | :---- |
 | 5V | MT3608 VOUT+ | LED ring power |
-| GND | Common ground | Power return |
+| GND | Common ground | Ground return |
 | D1 | T-Beam GPIO 13 | Serial LED data input |
-| D0 | Unconnected | Not used in the supplied circuit |
+| D0 | No connection listed | Unconnected or unused data output |
 
-Recommended practical additions, not present in the supplied net list, include:
-
-> * A bulk capacitor across the ring’s 5 V and GND inputs.  
-> * A series resistor, commonly around be 220–470 Ω, in the data line near the first pixel.  
-> * A suitable 3.3 V-to-5 V logic-level translator if reliable data reception is not achieved.
+The LED ring should have a suitable bulk capacitor across its 5 V and ground connections. A series resistor in the data line is also commonly recommended, especially when the data wire is long. These components are not included in the supplied parts list.
 
 ### ---
 
-**18650 in Holder**
+**18650 Battery Holder**
 
-| Battery Pin | Connected To | Function   |
+| Battery Holder Pin | Connection | Function   |
 | :---- | :---- | :---- |
-| VCC | MT3608 VIN+ | Positive battery connection |
-| GND | MT3608 VIN- | Negative battery connection |
+| VCC | MT3608 VIN+ | Battery positive |
+| GND | MT3608 VIN- | Battery negative |
 
-The battery polarity must be verified before powering the circuit. The holder and wiring should be rated for the expected NeoPixel current and boost-converter input current.
+The battery voltage varies during discharge. The MT3608 input and output ratings must be checked against the selected battery and LED load.
 
 ### ---
 
 **MT3608 Boost Converter**
 
-| MT3608 Pin | Connected To | Function   |
+| MT3608 Pin | Connection | Function   |
 | :---- | :---- | :---- |
-| VIN+ | 18650 holder VCC | Battery positive input |
-| VIN- | 18650 holder GND | Battery negative input |
-| VOUT+ | NeoPixel ring 5V | Boosted positive output |
-| VOUT- | Common ground | Boosted output return |
+| VIN+ | 18650 holder VCC | Battery input positive |
+| VIN- | 18650 holder GND | Battery input negative |
+| VOUT+ | WS2812 ring 5V | Boosted LED supply |
+| VOUT- | Common ground | Output ground |
 
-The MT3608 output voltage should be adjusted and measured under appropriate conditions. The converter must be capable of supplying the required current without excessive voltage drop or overheating.
+The MT3608 output voltage is not specified in the net list. It should be adjusted to approximately 5 V and verified with a multimeter before connecting the LED ring.
 
 ### ---
 
-**POT**
+**Potentiometer**
 
-| Potentiometer Pin | Connected To | Function   |
+| Potentiometer Pin | Connection | Function   |
 | :---- | :---- | :---- |
-| A | T-Beam 3V3 | Positive potentiometer supply |
+| A | T-Beam 3V3 | Potentiometer supply |
 | E | Common ground | Potentiometer ground |
-| S | T-Beam GPIO 33 | Variable analog output |
+| S | T-Beam VP / GPIO 36 | Wiper output |
 
-The potentiometer output should remain within the T-Beam’s permitted GPIO input range. With the supplied connections, the expected range is approximately 0–3.3 V.
+The potentiometer wiper voltage should remain within the T-Beam ADC input range. Since the potentiometer is supplied by 3.3 V, its output should remain between approximately 0 V and 3.3 V.
 
 ## ---
 
-**4\. Power and Grounding**
+**4\. Electrical Nets**
 
-The circuit contains two nominal supply domains:
+The following summarizes every specified electrical connection.
 
-### **3.3 V Domain**
+### **BNO085 Data Connections**
 
-Supplied by the T-Beam:
+> * BNO085 SDA/MISO/TX ↔ T-Beam GPIO 15  
+> * BNO085 SCL/SCK/RX ↔ T-Beam GPIO 14
+
+### **3.3 V Supply Network**
 
 > * BNO085 VCC  
 > * BNO085 PS1  
-> * Potentiometer terminal A
+> * T-Beam 3V3  
+> * Potentiometer A
 
-### **Boosted 5 V Domain**
+These pins are all electrically connected.
 
-Supplied by the MT3608:
+### **Common Ground Network**
 
-> * NeoPixel ring 5V
-
-### **Common Ground**
-
-The following are connected to a common ground net:
-
-> * T-Beam GND  
 > * BNO085 GND  
 > * BNO085 PS0  
+> * T-Beam GND  
 > * MT3608 VOUT-  
-> * MT3608 VIN-  
-> * 18650 holder GND  
 > * Potentiometer E  
-> * NeoPixel ring GND
+> * WS2812 ring GND
 
-The T-Beam ground and MT3608 output ground are therefore electrically common, allowing the T-Beam data signal to reference the NeoPixel ground.
+These pins are all electrically connected.
+
+### **Battery Input**
+
+> * 18650 holder GND ↔ MT3608 VIN-  
+> * 18650 holder VCC ↔ MT3608 VIN+
+
+### **LED Data**
+
+> * T-Beam GPIO 13 ↔ WS2812 ring D1
+
+### **Potentiometer Wiper**
+
+> * T-Beam VP / GPIO 36 ↔ Potentiometer S
+
+### **LED Power**
+
+> * MT3608 VOUT+ ↔ WS2812 ring 5V
 
 ## ---
-
 
